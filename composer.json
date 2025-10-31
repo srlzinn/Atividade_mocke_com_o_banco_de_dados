@@ -1,0 +1,17 @@
+{
+    "name": "lucca/mocke",
+    "autoload": {
+        "psr-4": {
+            "Lucca\\Mocke\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Lucca Galeno",
+            "email": "lucca.2.cordeiro@gmail.com"
+        }
+    ],
+    "require-dev": {
+        "phpunit/phpunit": "^12.4"
+    }
+}
