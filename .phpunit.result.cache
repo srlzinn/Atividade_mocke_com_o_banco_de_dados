@@ -1,0 +1,1 @@
+{"version":2,"defects":[],"times":{"UserServiceTest::testRegisterUserReturnsTrue":0.006,"UserServiceTest::testSendEmailIsCalledOnce":0.002,"UserServiceTest::testUserIsSavedInDatabase":0.002}}

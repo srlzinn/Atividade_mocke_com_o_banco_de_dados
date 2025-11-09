@@ -4,40 +4,67 @@ use PHPUnit\Framework\TestCase;
 use App\Models\User;
 use App\Services\UserService;
 use App\Services\EmailService;
+use App\Services\DatabaseService;
 
 require_once __DIR__ . '/../src/Models/User.php';
 require_once __DIR__ . '/../src/Services/EmailService.php';
+require_once __DIR__ . '/../src/Services/DatabaseService.php';
 require_once __DIR__ . '/../src/Services/UserService.php';
 
 /*
- * Aqui eu criei o teste unitário usando PHPUnit.
- * O objetivo é testar o UserService sem enviar e-mails reais.
+ * Aqui eu criei testes unitários que verificam três pontos:
+ * 1) Teste simples de unidade;
+ * 2) Uso de mocks;
+ * 3) Teste simulando salvamento no "banco de dados".
  */
 class UserServiceTest extends TestCase
 {
-    public function testRegisterUserSendsEmail()
+    // 🧩 Teste simples: verifica se o método retorna true
+    public function testRegisterUserReturnsTrue()
     {
-        // Crio um "mock" da classe EmailService
-        // Isso me permite simular o envio de e-mail
         $mockEmailService = $this->createMock(EmailService::class);
+        $mockDatabaseService = $this->createMock(DatabaseService::class);
 
-        // Defino o comportamento esperado do mock:
-        // sendWelcomeEmail deve ser chamado uma vez com o email certo
+        $mockEmailService->method('sendWelcomeEmail')->willReturn(true);
+        $mockDatabaseService->method('save')->willReturn(true);
+
+        $userService = new UserService($mockEmailService, $mockDatabaseService);
+        $user = new User('Lucca', 'lucca@example.com');
+
+        $this->assertTrue($userService->registerUser($user));
+    }
+
+    // 🧠 Teste com mock: garante que o e-mail é enviado uma vez
+    public function testSendEmailIsCalledOnce()
+    {
+        $mockEmailService = $this->createMock(EmailService::class);
+        $mockDatabaseService = $this->createMock(DatabaseService::class);
+
         $mockEmailService->expects($this->once())
             ->method('sendWelcomeEmail')
             ->with('lucca@example.com')
-            ->willReturn(true); // Retorno simulado
+            ->willReturn(true);
 
-        // Injetei o mock no UserService
-        $userService = new UserService($mockEmailService);
+        $mockDatabaseService->method('save')->willReturn(true);
 
-        // Crio um objeto User para o teste
+        $userService = new UserService($mockEmailService, $mockDatabaseService);
         $user = new User('Lucca', 'lucca@example.com');
+        $userService->registerUser($user);
+    }
 
-        // Executo o método que quero testar
-        $result = $userService->registerUser($user);
+    // 💾 Teste simulando salvamento no "banco de dados"
+    public function testUserIsSavedInDatabase()
+    {
+        $mockEmailService = $this->createMock(EmailService::class);
+        $databaseService = new DatabaseService(); // Aqui uso o real, sem mock
 
-        // Verifico se o retorno foi verdadeiro
-        $this->assertTrue($result);
+        $mockEmailService->method('sendWelcomeEmail')->willReturn(true);
+
+        $userService = new UserService($mockEmailService, $databaseService);
+        $user = new User('Lucca', 'lucca@example.com');
+        $userService->registerUser($user);
+
+        $data = $databaseService->getData();
+        $this->assertCount(1, $data['users']); // Confirma que foi salvo
     }
 }

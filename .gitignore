@@ -1,0 +1,4 @@
+echo "/vendor/" >> .gitignore
+echo "/.phpunit.cache/" >> .gitignore
+echo "/.idea/" >> .gitignore
+echo "/.vscode/" >> .gitignore
